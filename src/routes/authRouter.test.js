@@ -11,6 +11,23 @@ beforeAll(async () => {
   expectValidJwt(testUserAuthToken);
 });
 
+test('register', async () => {
+  const newUser = { name: 'new user', email: Math.random().toString(36).substring(2, 12) + '@test.com', password: 'a' };
+  const res = await request(app).post('/api/auth').send(newUser);
+  expect(res.status).toBe(200);
+  expectValidJwt(res.body.token);
+  
+  const expectedUser = { ...newUser, roles: [{ role: 'diner' }] };
+  delete expectedUser.password;
+  expect(res.body.user).toMatchObject(expectedUser);
+});
+
+test('bad register', async () => {
+  const res = await request(app).post('/api/auth').send({ name: 'x', email: 'y' });
+  expect(res.status).toBe(400);
+  expect(res.body).toMatchObject({ message: 'name, email, and password are required' });
+});
+
 test('login and logout', async () => {
   const loginRes = await request(app).put('/api/auth').send(testUser);
   expect(loginRes.status).toBe(200);
