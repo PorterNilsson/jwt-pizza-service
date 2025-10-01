@@ -1,0 +1,3 @@
+getFranchises doesn't authenticate
+weird CORS headers
+check setAuthUser function
