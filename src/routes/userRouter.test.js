@@ -2,15 +2,9 @@ const request = require("supertest");
 const app = require("../service");
 const { Role, DB } = require("../database/database.js");
 
-const testUser = { name: randomName(), email: randomEmail(), password: "a" };
-let testUserAuthToken;
 let adminUserAuthToken;
 
 beforeAll(async () => {
-  const registerRes = await request(app).post("/api/auth").send(testUser);
-  testUserAuthToken = registerRes.body.token;
-  testUser.id = registerRes.body.user.id;
-
   const adminUser = await createAdminUser();
   const loginRes = await request(app)
     .put("/api/auth")
@@ -33,10 +27,6 @@ test("list users", async () => {
 
 function randomName() {
   return Math.random().toString(36).substring(2, 12);
-}
-
-function randomEmail() {
-  return `${randomName()}@test.com`;
 }
 
 async function createAdminUser() {
