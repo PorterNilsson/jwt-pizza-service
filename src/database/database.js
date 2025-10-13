@@ -89,13 +89,11 @@ class DB {
         ]);
         await this.query(connection, `DELETE FROM user WHERE id=?`, [userId]);
         await connection.commit();
-      }
-      catch {
+      } catch {
         await connection.rollback();
         throw new StatusCodeError("unable to delete user", 500);
       }
-    }
-    finally {
+    } finally {
       connection.end();
     }
   }
@@ -119,10 +117,11 @@ class DB {
 
       const userIds = users.map((u) => u.id);
       if (userIds.length) {
+        const placeholders = userIds.map(() => "?").join(",");
         const roles = await this.query(
           connection,
-          `SELECT userId, role FROM userRole WHERE userId IN (?)`,
-          [userIds]
+          `SELECT userId, role FROM userRole WHERE userId IN (${placeholders})`,
+          userIds
         );
 
         for (const user of users) {
