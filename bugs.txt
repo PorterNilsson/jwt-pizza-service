@@ -1,3 +1,6 @@
 getFranchises doesn't authenticate
 weird CORS headers
 check setAuthUser function
+
+Check how JWTs are generated
+Need a function to enforce roles based on JWT
