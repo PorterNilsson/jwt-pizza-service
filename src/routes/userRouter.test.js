@@ -2,9 +2,13 @@ const request = require("supertest");
 const app = require("../service");
 const { Role, DB } = require("../database/database.js");
 
+const testUser = { name: randomName(), email: randomEmail(), password: "a" };
 let adminUserAuthToken;
 
 beforeAll(async () => {
+  const registerRes = await request(app).post("/api/auth").send(testUser);
+  testUser.id = registerRes.body.user.id;
+
   const adminUser = await createAdminUser();
   const loginRes = await request(app)
     .put("/api/auth")
@@ -25,8 +29,19 @@ test("list users", async () => {
   expect(listUsersRes.status).toBe(200);
 });
 
+test("delete a user", async () => {
+  const deleteUserRes = await request(app)
+    .delete(`/api/user/${testUser.id}`)
+    .set("Authorization", `Bearer ${adminUserAuthToken}`);
+  expect(deleteUserRes.status).toBe(200);
+});
+
 function randomName() {
   return Math.random().toString(36).substring(2, 12);
+}
+
+function randomEmail() {
+  return `${randomName()}@test.com`;
 }
 
 async function createAdminUser() {
