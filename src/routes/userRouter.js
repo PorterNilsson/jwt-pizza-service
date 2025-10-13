@@ -60,7 +60,7 @@ userRouter.docs = [
     description: "Delete a user",
     example: `curl -X DELETE localhost:3000/api/user/1 -H 'Authorization: Bearer tttttt'`,
     response: {
-      message: "User deleted",
+      message: "user deleted",
     },
   }
 ];
@@ -99,6 +99,16 @@ userRouter.put(
     const updatedUser = await DB.updateUser(userId, name, email, password);
     const auth = await setAuth(updatedUser);
     res.json({ user: updatedUser, token: auth });
+  })
+);
+
+userRouter.delete(
+  "/:userId",
+  authRouter.authenticateToken,
+  asyncHandler(async (req, res) => {
+    const userId = Number(req.params.userId);
+    await DB.deleteUser(userId);
+    res.json({ message: "user deleted" });
   })
 );
 

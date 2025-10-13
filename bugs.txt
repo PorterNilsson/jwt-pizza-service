@@ -4,3 +4,5 @@ check setAuthUser function
 
 Check how JWTs are generated
 Need a function to enforce roles based on JWT
+
+remember we added userRouter pagination get and delete (check auth)
