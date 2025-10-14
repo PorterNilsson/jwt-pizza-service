@@ -127,7 +127,7 @@ class DB {
         for (const user of users) {
           user.roles = roles
             .filter((r) => r.userId === user.id)
-            .map((r) => r.role);
+            .map((r) => ({ role: r.role }));
         }
       }
 
