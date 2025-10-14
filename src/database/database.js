@@ -125,9 +125,11 @@ class DB {
         );
 
         for (const user of users) {
-          user.roles = roles
+          const userRoles = roles
             .filter((r) => r.userId === user.id)
-            .map((r) => ({ role: r.role }));
+            .map((r) => r.role);
+          const uniqueRoles = [...new Set(userRoles)];
+          user.roles = uniqueRoles.map((role) => ({ role }));
         }
       }
 
