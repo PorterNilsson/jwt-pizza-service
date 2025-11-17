@@ -79,7 +79,7 @@ function recordFactoryLatency(durationMs) {
 // This will periodically send metrics to Grafana
 function startMetrics() {
   setInterval(async () => {
-    console.log("SENDING METRICS!!!!!");
+    // console.log("SENDING METRICS!!!!!");
 
     const metrics = [];
     Object.keys(requests).forEach((method) => {
@@ -245,8 +245,8 @@ async function sendMetricToGrafana(metrics) {
       },
     });
 
-  console.log("GRAFANA RESPONSE!!!");
-  console.log(response)
+  // console.log("GRAFANA RESPONSE!!!");
+  // console.log(response)
 
     if (!response.ok) {
       const text = await response.text();
