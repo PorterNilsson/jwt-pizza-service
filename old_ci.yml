@@ -18,9 +18,13 @@ jobs:
           MYSQL_ROOT_PASSWORD: tempdbpassword
           MYSQL_DATABASE: pizza
         ports:
-          - "3306:3306"
+          - '3306:3306'
         options: >-
-          --health-cmd "mysqladmin ping -ptempdbpassword" --health-interval 10s --health-start-period 10s --health-timeout 5s --health-retries 10
+          --health-cmd "mysqladmin ping -ptempdbpassword" 
+          --health-interval 10s 
+          --health-start-period 10s 
+          --health-timeout 5s 
+          --health-retries 10
 
     steps:
       - name: Checkout repo
@@ -29,7 +33,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22.x"
+          node-version: '22.x'
 
       - name: Install dependencies
         run: npm ci
@@ -60,20 +64,7 @@ jobs:
               url: '${{ secrets.METRICS_URL }}',
               apiKey: '${{ secrets.METRICS_API_KEY }}',
             },
-            logging: {
-              source: 'jwt-pizza-service',
-              userId: ${{ secrets.LOGGING_USER_ID }},
-              url: '${{ secrets.LOGGING_URL }}',
-              apiKey: '${{ secrets.LOGGING_API_KEY }}',
-            },            
           };" > src/config.js
-
-      - name: Seed database
-        run: |
-          npm run start &
-          sleep 5
-          bash generatePizzaData.sh http://localhost:3000
-          pkill node
 
       - name: Tests
         run: npm test
@@ -106,7 +97,7 @@ jobs:
         with:
           name: package
           path: dist/
-
+  
   deploy:
     runs-on: ubuntu-latest
     permissions:
@@ -114,6 +105,7 @@ jobs:
     needs: build
     env:
       version: ${{needs.build.outputs.version}}
+
     steps:
       - name: Download distribution artifact
         uses: actions/download-artifact@v4
@@ -141,9 +133,9 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: "jwt-pizza-service"
+          ECR_REPOSITORY: 'jwt-pizza-service'
         run: |
-          docker build --platform=linux/arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY --push .
+          docker build --platform=linux/arm64 --no-cache -t $ECR_REGISTRY/$ECR_REPOSITORY --push .
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:latest" >>  $GITHUB_OUTPUT
 
       - name: Deploy new container
