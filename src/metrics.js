@@ -78,7 +78,7 @@ function recordFactoryLatency(durationMs) {
 
 // This will periodically send metrics to Grafana
 function startMetrics() {
-  setInterval(() => {
+  setInterval(async () => {
     // console.log("SENDING METRICS!!!!!");
 
     const metrics = [];
@@ -178,7 +178,7 @@ function startMetrics() {
       factoryLatencies = [];
     }
 
-    sendMetricToGrafana(metrics);
+    await sendMetricToGrafana(metrics);
   }, 10000);
 }
 
@@ -222,7 +222,7 @@ function createMetric(
   return metric;
 }
 
-function sendMetricToGrafana(metrics) {
+async function sendMetricToGrafana(metrics) {
   const body = {
     resourceMetrics: [
       {
@@ -235,22 +235,23 @@ function sendMetricToGrafana(metrics) {
     ],
   };
 
-  fetch(`${config.metrics.url}`, {
-    method: "POST",
-    body: JSON.stringify(body),
-    headers: {
-      Authorization: `Bearer ${config.metrics.apiKey}`,
-      "Content-Type": "application/json",
-    },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP status: ${response.status}`);
-      }
-    })
-    .catch((error) => {
-      console.error("Error pushing metrics:", error);
+  try {
+    const response = await fetch(`${config.metrics.url}`, {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: {
+        Authorization: `Bearer ${config.metrics.apiKey}`,
+        "Content-Type": "application/json",
+      },
     });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`HTTP status ${response.status}: ${text}`);
+    }
+  } catch (error) {
+    console.error("Error pushing metrics:", error);
+  }
 }
 
 module.exports = {
@@ -263,5 +264,5 @@ module.exports = {
   incrementPizzaCreationFailures,
   recordBackendLatency,
   recordFactoryLatency,
-  startMetrics
+  startMetrics,
 };
