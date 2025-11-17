@@ -5,8 +5,20 @@ const franchiseRouter = require('./routes/franchiseRouter.js');
 const userRouter = require('./routes/userRouter.js');
 const version = require('./version.json');
 const config = require('./config.js');
+const metrics = require('./metrics.js');
 
 const app = express();
+app.use(metrics.requestTracker);
+app.use((req, res, next) => {
+  const start = process.hrtime.bigint();
+  res.on('finish', () => {
+    const end = process.hrtime.bigint();
+    const durationMs = Number(end - start) / 1e6;
+    metrics.recordBackendLatency(durationMs);
+    // console.log(`${req.method} ${req.originalUrl} took ${durationMs.toFixed(2)}ms`);
+  });
+  next();
+});
 app.use(express.json());
 app.use(setAuthUser);
 app.use((req, res, next) => {
