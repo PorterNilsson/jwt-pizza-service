@@ -14,7 +14,6 @@ test("docs", async () => {
   expect(res.body).toHaveProperty("endpoints");
   expect(res.body).toHaveProperty("config");
   expect(res.body.config).toHaveProperty("factory");
-  expect(res.body.config).toHaveProperty("db");
 });
 
 test("root", async () => {

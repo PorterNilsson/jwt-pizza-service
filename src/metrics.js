@@ -1,5 +1,5 @@
 const config = require("./config");
-const os = require('os');
+const os = require("os");
 
 const requests = {};
 
@@ -55,7 +55,10 @@ function updatePizzasSold(order) {
 
   pizzasSold += order.items.length;
 
-  const orderTotal = order.items.reduce((sum, item) => sum + (item.price || 0), 0);
+  const orderTotal = order.items.reduce(
+    (sum, item) => sum + (item.price || 0),
+    0
+  );
   totalRevenue += orderTotal;
 
   // console.log(`Updated metrics: pizzasSold=${pizzasSold}, totalRevenue=${totalRevenue.toFixed(4)}`);
@@ -74,46 +77,110 @@ function recordFactoryLatency(durationMs) {
 }
 
 // This will periodically send metrics to Grafana
-setInterval(() => {
-  // console.log("SENDING METRICS!!!!!");
+function startMetrics() {
+  setInterval(() => {
+    // console.log("SENDING METRICS!!!!!");
 
-  const metrics = [];
-  Object.keys(requests).forEach((method) => {
+    const metrics = [];
+    Object.keys(requests).forEach((method) => {
+      metrics.push(
+        createMetric("requests", requests[method], "1", "sum", "asInt", {
+          method,
+        })
+      );
+    });
+
     metrics.push(
-      createMetric("requests", requests[method], "1", "sum", "asInt", {
-        method,
-      })
+      createMetric("activeUsers", activeUsers, "1", "gauge", "asInt", {})
     );
-  });
 
-  metrics.push(createMetric("activeUsers", activeUsers, "1", "gauge", "asInt", {}));
+    metrics.push(
+      createMetric(
+        "successfulLogins",
+        successfulLogins,
+        "1",
+        "sum",
+        "asInt",
+        {}
+      )
+    );
+    metrics.push(
+      createMetric("failedLogins", failedLogins, "1", "sum", "asInt", {})
+    );
 
-  metrics.push(createMetric("successfulLogins", successfulLogins, "1", "sum", "asInt", {}));
-  metrics.push(createMetric("failedLogins", failedLogins, "1", "sum", "asInt", {}));
+    metrics.push(
+      createMetric(
+        "cpuUsage",
+        getCpuUsagePercentage(),
+        "%",
+        "gauge",
+        "asDouble",
+        {}
+      )
+    );
+    metrics.push(
+      createMetric(
+        "memoryUsage",
+        getMemoryUsagePercentage(),
+        "%",
+        "gauge",
+        "asDouble",
+        {}
+      )
+    );
 
-  metrics.push(createMetric("cpuUsage", getCpuUsagePercentage(), "%", "gauge", "asDouble", {}));
-  metrics.push(createMetric("memoryUsage", getMemoryUsagePercentage(), "%", "gauge", "asDouble", {}));
+    metrics.push(
+      createMetric("pizzasSold", pizzasSold, "1", "sum", "asInt", {})
+    );
+    metrics.push(
+      createMetric(
+        "pizzaCreationFailures",
+        pizzaCreationFailures,
+        "1",
+        "sum",
+        "asInt",
+        {}
+      )
+    );
+    metrics.push(
+      createMetric("totalRevenue", totalRevenue, "1", "sum", "asDouble", {})
+    );
 
-  metrics.push(createMetric("pizzasSold", pizzasSold, "1", "sum", "asInt", {}));
-  metrics.push(createMetric("pizzaCreationFailures", pizzaCreationFailures, "1", "sum", "asInt", {}));
-  metrics.push(createMetric("totalRevenue", totalRevenue, "1", "sum", "asDouble", {}));
+    if (backendLatencies.length > 0) {
+      const sum = backendLatencies.reduce((a, b) => a + b, 0);
+      const avg = sum / backendLatencies.length;
+      metrics.push(
+        createMetric(
+          "backendLatency",
+          avg.toFixed(2),
+          "ms",
+          "gauge",
+          "asDouble",
+          {}
+        )
+      );
+      backendLatencies = [];
+    }
 
-  if (backendLatencies.length > 0) {
-    const sum = backendLatencies.reduce((a, b) => a + b, 0);
-    const avg = sum / backendLatencies.length;
-    metrics.push(createMetric("backendLatency", avg.toFixed(2), "ms", "gauge", "asDouble", {}));
-    backendLatencies = [];
-  }
+    if (factoryLatencies.length > 0) {
+      const sum = factoryLatencies.reduce((a, b) => a + b, 0);
+      const avg = sum / factoryLatencies.length;
+      metrics.push(
+        createMetric(
+          "factoryLatency",
+          avg.toFixed(2),
+          "ms",
+          "gauge",
+          "asDouble",
+          {}
+        )
+      );
+      factoryLatencies = [];
+    }
 
-  if (factoryLatencies.length > 0) {
-    const sum = factoryLatencies.reduce((a, b) => a + b, 0);
-    const avg = sum / factoryLatencies.length;
-    metrics.push(createMetric("factoryLatency", avg.toFixed(2), "ms", "gauge", "asDouble", {}));
-    factoryLatencies = [];
-  }
-
-  sendMetricToGrafana(metrics);
-}, 10000);
+    sendMetricToGrafana(metrics);
+  }, 10000);
+}
 
 function createMetric(
   metricName,
@@ -195,5 +262,6 @@ module.exports = {
   updatePizzasSold,
   incrementPizzaCreationFailures,
   recordBackendLatency,
-  recordFactoryLatency
+  recordFactoryLatency,
+  startMetrics
 };
