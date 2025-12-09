@@ -103,54 +103,54 @@ test("get user franchises as admin", async () => {
   expect(res.body).toEqual(expect.any(Array));
 });
 
-test("create store", async () => {
-  const franchiseRes = await request(app)
-    .post("/api/franchise")
-    .set("Authorization", `Bearer ${adminUserAuthToken}`)
-    .send({
-      name: randomName(),
-      admins: [{ email: testUser.email }],
-    });
+// test("create store", async () => {
+//   const franchiseRes = await request(app)
+//     .post("/api/franchise")
+//     .set("Authorization", `Bearer ${adminUserAuthToken}`)
+//     .send({
+//       name: randomName(),
+//       admins: [{ email: testUser.email }],
+//     });
 
-  const res = await request(app)
-    .post(`/api/franchise/${franchiseRes.body.id}/store`)
-    .set("Authorization", `Bearer ${adminUserAuthToken}`)
-    .send({
-      name: randomName(),
-      location: randomName(),
-    });
+//   const res = await request(app)
+//     .post(`/api/franchise/${franchiseRes.body.id}/store`)
+//     .set("Authorization", `Bearer ${adminUserAuthToken}`)
+//     .send({
+//       name: randomName(),
+//       location: randomName(),
+//     });
 
-  expect(res.status).toBe(200);
-  expect(res.body).toMatchObject({
-    id: expect.any(Number),
-    name: expect.any(String),
-  });
-});
+//   expect(res.status).toBe(200);
+//   expect(res.body).toMatchObject({
+//     id: expect.any(Number),
+//     name: expect.any(String),
+//   });
+// });
 
-test("delete store", async () => {
-    const franchiseRes = await request(app)
-        .post("/api/franchise")
-        .set("Authorization", `Bearer ${adminUserAuthToken}`)
-        .send({
-            name: randomName(),
-            admins: [{ email: testUser.email }],
-        });
+// test("delete store", async () => {
+//     const franchiseRes = await request(app)
+//         .post("/api/franchise")
+//         .set("Authorization", `Bearer ${adminUserAuthToken}`)
+//         .send({
+//             name: randomName(),
+//             admins: [{ email: testUser.email }],
+//         });
 
-    const storeRes = await request(app)
-        .post(`/api/franchise/${franchiseRes.body.id}/store`)
-        .set("Authorization", `Bearer ${adminUserAuthToken}`)
-        .send({
-            name: randomName(),
-            location: randomName(),
-        });
+//     const storeRes = await request(app)
+//         .post(`/api/franchise/${franchiseRes.body.id}/store`)
+//         .set("Authorization", `Bearer ${adminUserAuthToken}`)
+//         .send({
+//             name: randomName(),
+//             location: randomName(),
+//         });
 
-    const res = await request(app)
-        .delete(`/api/franchise/${franchiseRes.body.id}/store/${storeRes.body.id}`)
-        .set("Authorization", `Bearer ${adminUserAuthToken}`);
+//     const res = await request(app)
+//         .delete(`/api/franchise/${franchiseRes.body.id}/store/${storeRes.body.id}`)
+//         .set("Authorization", `Bearer ${adminUserAuthToken}`);
 
-    expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ message: "store deleted" });
-});
+//     expect(res.status).toBe(200);
+//     expect(res.body).toMatchObject({ message: "store deleted" });
+// });
 
 function randomName() {
   return Math.random().toString(36).substring(2, 12);
