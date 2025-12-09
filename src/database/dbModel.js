@@ -73,4 +73,4 @@ const tableCreateStatements = [
   )`,
 ];
 
-module.exports = { tableCreateStatements };
+module.exports = { tableCreateStatements, tableTruncateStatements };
