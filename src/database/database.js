@@ -536,7 +536,7 @@ class DB {
         const defaultAdmin = {
           name: "defaultAdmin",
           email: config.credentials.email,
-          password: config.credentials.email,
+          password: config.credentials.password,
           roles: [{ role: Role.Admin }],
         };
         this.addUser(defaultAdmin);
