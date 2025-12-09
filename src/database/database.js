@@ -533,16 +533,13 @@ class DB {
         }
         await connection.query(`SET FOREIGN_KEY_CHECKS = 1`);
 
-
-        if (!dbExists) {
-          const defaultAdmin = {
-            name: "defaultAdmin",
-            email: config.credentials.email,
-            password: config.credentials.email,
-            roles: [{ role: Role.Admin }],
-          };
-          this.addUser(defaultAdmin);
-        }
+        const defaultAdmin = {
+          name: "defaultAdmin",
+          email: config.credentials.email,
+          password: config.credentials.email,
+          roles: [{ role: Role.Admin }],
+        };
+        this.addUser(defaultAdmin);
 
         console.log("FINISHED");
       } finally {
