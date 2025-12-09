@@ -4,7 +4,7 @@ const config = require("../config.js");
 const { StatusCodeError } = require("../endpointHelper.js");
 const { Role } = require("../model/model.js");
 const dbModel = require("./dbModel.js");
-const logger = require('../logger.js')
+const logger = require("../logger.js");
 
 class DB {
   constructor() {
@@ -508,34 +508,35 @@ class DB {
   async initializeDatabase() {
     try {
       const connection = await this._getConnection(false);
+
       try {
-        const dbExists = await this.checkDatabaseExists(connection);
         console.log(
-          dbExists ? "Database exists" : "Database does not exist, creating it"
+          `Dropping database ${config.db.connection.database} if it exists...`
         );
-
         await connection.query(
-          `CREATE DATABASE IF NOT EXISTS ${config.db.connection.database}`
+          `DROP DATABASE IF EXISTS \`${config.db.connection.database}\``
         );
-        await connection.query(`USE ${config.db.connection.database}`);
 
-        if (!dbExists) {
-          console.log("Successfully created database");
-        }
+        console.log(`Creating database ${config.db.connection.database}...`);
+        await connection.query(
+          `CREATE DATABASE \`${config.db.connection.database}\``
+        );
+        await connection.query(`USE \`${config.db.connection.database}\``);
 
         for (const statement of dbModel.tableCreateStatements) {
           await connection.query(statement);
         }
 
-        if (!dbExists) {
-          const defaultAdmin = {
-            name: "常用名字",
-            email: "a@jwt.com",
-            password: "admin",
-            roles: [{ role: Role.Admin }],
-          };
-          this.addUser(defaultAdmin);
-        }
+        // Add default admin
+        const defaultAdmin = {
+          name: "defaultAdmin",
+          email: config.credentials.email,
+          password: config.credentials.password,
+          roles: [{ role: Role.Admin }],
+        };
+        await this.addUser(defaultAdmin);
+
+        console.log("Database initialized successfully.");
       } finally {
         connection.end();
       }
