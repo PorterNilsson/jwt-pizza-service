@@ -176,21 +176,31 @@ class DB {
   async updateUser(userId, name, email, password) {
     const connection = await this.getConnection();
     try {
-      const params = [];
+      const assignments = [];
+      const values = [];
+
       if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
-        params.push(`password='${hashedPassword}'`);
+        assignments.push(`password = ?`);
+        values.push(hashedPassword);
       }
+
       if (email) {
-        params.push(`email='${email}'`);
+        assignments.push(`email = ?`);
+        values.push(email);
       }
+
       if (name) {
-        params.push(`name='${name}'`);
+        assignments.push(`name = ?`);
+        values.push(name);
       }
-      if (params.length > 0) {
-        const query = `UPDATE user SET ${params.join(", ")} WHERE id=${userId}`;
-        await this.query(connection, query);
+
+      if (assignments.length > 0) {
+        const query = `UPDATE user SET ${assignments.join(", ")} WHERE id = ?`;
+        values.push(userId);
+        await this.query(connection, query, values);
       }
+
       return this.getUser(email, password);
     } finally {
       connection.end();
@@ -391,18 +401,24 @@ class DB {
         `SELECT objectId FROM userRole WHERE role='franchisee' AND userId=?`,
         [userId]
       );
+
       if (franchiseIds.length === 0) {
         return [];
       }
 
-      franchiseIds = franchiseIds.map((v) => v.objectId);
+      const ids = franchiseIds.map((v) => v.objectId);
+      const placeholders = ids.map(() => "?").join(",");
+
       const franchises = await this.query(
         connection,
-        `SELECT id, name FROM franchise WHERE id in (${franchiseIds.join(",")})`
+        `SELECT id, name FROM franchise WHERE id IN (${placeholders})`,
+        ids
       );
+
       for (const franchise of franchises) {
         await this.getFranchise(franchise);
       }
+
       return franchises;
     } finally {
       connection.end();
