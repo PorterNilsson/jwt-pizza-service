@@ -1,3 +1,14 @@
+const tableTruncateStatements = [
+  `TRUNCATE TABLE orderItem;`,
+  `TRUNCATE TABLE dinerOrder;`,
+  `TRUNCATE TABLE userRole;`,
+  `TRUNCATE TABLE store;`,
+  `TRUNCATE TABLE franchise;`,
+  `TRUNCATE TABLE menu;`,
+  `TRUNCATE TABLE user;`,
+  `TRUNCATE TABLE auth;`,
+];
+
 const tableCreateStatements = [
   `CREATE TABLE IF NOT EXISTS auth (
     token VARCHAR(512) PRIMARY KEY,

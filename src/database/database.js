@@ -4,7 +4,7 @@ const config = require("../config.js");
 const { StatusCodeError } = require("../endpointHelper.js");
 const { Role } = require("../model/model.js");
 const dbModel = require("./dbModel.js");
-const logger = require("../logger.js");
+const logger = require('../logger.js')
 
 class DB {
   constructor() {
@@ -508,35 +508,38 @@ class DB {
   async initializeDatabase() {
     try {
       const connection = await this._getConnection(false);
-
       try {
+        const dbExists = await this.checkDatabaseExists(connection);
         console.log(
-          `Dropping database ${config.db.connection.database} if it exists...`
-        );
-        await connection.query(
-          `DROP DATABASE IF EXISTS \`${config.db.connection.database}\``
+          dbExists ? "Database exists" : "Database does not exist, creating it"
         );
 
-        console.log(`Creating database ${config.db.connection.database}...`);
         await connection.query(
-          `CREATE DATABASE \`${config.db.connection.database}\``
+          `CREATE DATABASE IF NOT EXISTS ${config.db.connection.database}`
         );
-        await connection.query(`USE \`${config.db.connection.database}\``);
+        await connection.query(`USE ${config.db.connection.database}`);
+
+        if (!dbExists) {
+          console.log("Successfully created database");
+        }
+
+        for (const statement of dbModel.tableTruncateStatements) {
+          await connection.query(statement);
+        }
 
         for (const statement of dbModel.tableCreateStatements) {
           await connection.query(statement);
         }
 
-        // Add default admin
-        const defaultAdmin = {
-          name: "defaultAdmin",
-          email: config.credentials.email,
-          password: config.credentials.password,
-          roles: [{ role: Role.Admin }],
-        };
-        await this.addUser(defaultAdmin);
-
-        console.log("Database initialized successfully.");
+        if (!dbExists) {
+          const defaultAdmin = {
+            name: "defaultAdmin",
+            email: config.credentials.email,
+            password: config.credentials.email,
+            roles: [{ role: Role.Admin }],
+          };
+          this.addUser(defaultAdmin);
+        }
       } finally {
         connection.end();
       }
