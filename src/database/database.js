@@ -523,15 +523,16 @@ class DB {
           console.log("Successfully created database");
         }
 
+        for (const statement of dbModel.tableCreateStatements) {
+          await connection.query(statement);
+        }
+
         await connection.query(`SET FOREIGN_KEY_CHECKS = 0`);
         for (const statement of dbModel.tableTruncateStatements) {
           await connection.query(statement);
         }
         await connection.query(`SET FOREIGN_KEY_CHECKS = 1`);
 
-        for (const statement of dbModel.tableCreateStatements) {
-          await connection.query(statement);
-        }
 
         if (!dbExists) {
           const defaultAdmin = {
